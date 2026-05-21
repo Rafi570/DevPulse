@@ -69,7 +69,6 @@ export const getAllIssues: RequestHandler = async (req, res, next) => {
   }
 };
 
-// 🚀 2. Get Single Issue context identification handler
 export const getSingleIssue: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -91,7 +90,6 @@ export const getSingleIssue: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
-// 🚀 3. Delete Issue Controller with RequestHandler mapping interface
 export const deleteIssue: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -113,7 +111,32 @@ export const deleteIssue: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+export const updateIssue: RequestHandler = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const payload = req.body;
+    
+    const user = (req as any).user; 
 
+    const result = await IssueServices.updateIssueInDB(Number(id), payload, user);
+
+    if (result.status !== 200) {
+      res.status(result.status).json({
+        success: false,
+        message: result.message,
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Issue updated successfully",
+      data: result.data,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 
 
@@ -121,5 +144,6 @@ export const IssueControllers = {
   createIssue,
   getAllIssues,
   getSingleIssue,
-  deleteIssue
+  deleteIssue,
+  updateIssue
 };
