@@ -1,9 +1,13 @@
 import { pool } from "../../../db";
-import type { TCreateIssueInput, TIssueFilterQuery, TIssueResponse } from "./issues.interface";
+import type {
+  TCreateIssueInput,
+  TIssueFilterQuery,
+  TIssueResponse,
+} from "./issues.interface";
 
 const createIssueInDB = async (
-  issueData: TCreateIssueInput, 
-  reporterId: number
+  issueData: TCreateIssueInput,
+  reporterId: number,
 ): Promise<any> => {
   const { title, description, type } = issueData;
 
@@ -25,11 +29,9 @@ const createIssueInDB = async (
 
   return {
     ...createdIssue,
-    reporter: reporterMeta || null
+    reporter: reporterMeta || null,
   };
 };
-
-
 const getAllIssuesFromDB = async (filters: any) => {
   const { sort = "newest", type, status } = filters;
 
@@ -64,10 +66,10 @@ const getAllIssuesFromDB = async (filters: any) => {
   // BATCH IMPLEMENTATION: Array formatting target list identification mapper tracking
   const reporterIds = [...new Set(issues.map((issue) => issue.reporter_id))];
 
-  // Dynamic user data single operation loop resolution tracking logic parameters 
+  // Dynamic user data single operation loop resolution tracking logic parameters
   const usersResult = await pool.query(
     `SELECT id, name, role FROM users WHERE id = ANY($1);`,
-    [reporterIds]
+    [reporterIds],
   );
 
   const userMap = usersResult.rows.reduce((acc: any, user: any) => {
@@ -82,14 +84,14 @@ const getAllIssuesFromDB = async (filters: any) => {
       ...rest,
       reporter: userMap[reporter_id] || null,
       created_at,
-      updated_at
+      updated_at,
     };
   });
 };
-
-// 🚀 2. Get Single Issue details locator mapping
 const getSingleIssueFromDB = async (id: number) => {
-  const issueResult = await pool.query(`SELECT * FROM issues WHERE id = $1;`, [id]);
+  const issueResult = await pool.query(`SELECT * FROM issues WHERE id = $1;`, [
+    id,
+  ]);
   const issue = issueResult.rows[0];
 
   if (!issue) return null;
@@ -97,7 +99,7 @@ const getSingleIssueFromDB = async (id: number) => {
   // Secondary dynamic lookup string profile reader metadata mapping
   const userResult = await pool.query(
     `SELECT id, name, role FROM users WHERE id = $1;`,
-    [issue.reporter_id]
+    [issue.reporter_id],
   );
   const reporterMeta = userResult.rows[0];
 
@@ -106,29 +108,32 @@ const getSingleIssueFromDB = async (id: number) => {
     ...rest,
     reporter: reporterMeta || null,
     created_at,
-    updated_at
+    updated_at,
   };
 };
-
 const deleteIssueFromDB = async (id: number): Promise<boolean> => {
-  const checkIssue = await pool.query(`SELECT id FROM issues WHERE id = $1;`, [id]);
-  
+  const checkIssue = await pool.query(`SELECT id FROM issues WHERE id = $1;`, [
+    id,
+  ]);
+
   if (checkIssue.rows.length === 0) {
-    return false; 
+    return false;
   }
 
   // Row permanently delete korar pure SQL command query
   await pool.query(`DELETE FROM issues WHERE id = $1;`, [id]);
   return true;
 };
-// 🚀 4. Update Issue with complex role & status validation checks
 const updateIssueInDB = async (
-  id: number, 
+  id: number,
   payload: { title?: string; description?: string; type?: string },
-  user: { id: number; role: string }
+  user: { id: number; role: string },
 ) => {
   // ১. Prothome database theke current issue-ta tule ani validation check er jonno
-  const currentIssueResult = await pool.query(`SELECT * FROM issues WHERE id = $1;`, [id]);
+  const currentIssueResult = await pool.query(
+    `SELECT * FROM issues WHERE id = $1;`,
+    [id],
+  );
   const issue = currentIssueResult.rows[0];
 
   if (!issue) {
@@ -143,7 +148,10 @@ const updateIssueInDB = async (
     }
     // Check ২: Status ki open?
     if (issue.status !== "open") {
-      return { status: 400, message: "Contributors can only update issues when status is open" };
+      return {
+        status: 400,
+        message: "Contributors can only update issues when status is open",
+      };
     }
   }
 
@@ -165,7 +173,10 @@ const updateIssueInDB = async (
   }
 
   if (fields.length === 0) {
-    return { status: 400, message: "Please provide at least one field to update" };
+    return {
+      status: 400,
+      message: "Please provide at least one field to update",
+    };
   }
 
   fields.push(`updated_at = NOW()`);
@@ -177,12 +188,10 @@ const updateIssueInDB = async (
   return { status: 200, data: updatedResult.rows[0] };
 };
 
-
-
 export const IssueServices = {
   createIssueInDB,
   getAllIssuesFromDB,
   getSingleIssueFromDB,
   deleteIssueFromDB,
-  updateIssueInDB
+  updateIssueInDB,
 };
