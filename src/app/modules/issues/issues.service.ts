@@ -121,10 +121,68 @@ const deleteIssueFromDB = async (id: number): Promise<boolean> => {
   await pool.query(`DELETE FROM issues WHERE id = $1;`, [id]);
   return true;
 };
+// 🚀 4. Update Issue with complex role & status validation checks
+const updateIssueInDB = async (
+  id: number, 
+  payload: { title?: string; description?: string; type?: string },
+  user: { id: number; role: string }
+) => {
+  // ১. Prothome database theke current issue-ta tule ani validation check er jonno
+  const currentIssueResult = await pool.query(`SELECT * FROM issues WHERE id = $1;`, [id]);
+  const issue = currentIssueResult.rows[0];
+
+  if (!issue) {
+    return { status: 404, message: "Issue not found" };
+  }
+
+  // ২. Logic Check: Role Base Rule Authorization
+  if (user.role === "contributor") {
+    // Check ১: Nijer issue ki na?
+    if (issue.reporter_id !== user.id) {
+      return { status: 403, message: "You can only update your own issues" };
+    }
+    // Check ২: Status ki open?
+    if (issue.status !== "open") {
+      return { status: 400, message: "Contributors can only update issues when status is open" };
+    }
+  }
+
+  const fields: string[] = [];
+  const values: any[] = [];
+  let index = 1;
+
+  if (payload.title) {
+    fields.push(`title = $${index++}`);
+    values.push(payload.title);
+  }
+  if (payload.description) {
+    fields.push(`description = $${index++}`);
+    values.push(payload.description);
+  }
+  if (payload.type) {
+    fields.push(`type = $${index++}`);
+    values.push(payload.type);
+  }
+
+  if (fields.length === 0) {
+    return { status: 400, message: "Please provide at least one field to update" };
+  }
+
+  fields.push(`updated_at = NOW()`);
+
+  values.push(id);
+  const queryText = `UPDATE issues SET ${fields.join(", ")} WHERE id = $${index} RETURNING *;`;
+
+  const updatedResult = await pool.query(queryText, values);
+  return { status: 200, data: updatedResult.rows[0] };
+};
+
+
 
 export const IssueServices = {
   createIssueInDB,
   getAllIssuesFromDB,
   getSingleIssueFromDB,
-  deleteIssueFromDB
+  deleteIssueFromDB,
+  updateIssueInDB
 };
