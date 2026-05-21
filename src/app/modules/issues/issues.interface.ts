@@ -14,3 +14,10 @@ export interface TIssueResponse {
   created_at: Date;
   updated_at: Date;
 }
+
+
+export type TIssueFilterQuery = {
+  sort?: "newest" | "oldest";
+  type?: "bug" | "feature_request";
+  status?: "open" | "in_progress" | "resolved";
+};

@@ -1,4 +1,4 @@
-import type { Response, NextFunction } from "express";
+import type { Response, NextFunction, RequestHandler } from "express";
 import type { TCustomRequest } from "../../../middleware/auth.middleware";
 import { IssueServices } from "./issues.service";
 
@@ -44,7 +44,6 @@ const createIssue = async (
       return;
     }
 
-    // Service theke clean response object fetch kora holo (metadata soho)
     const result = await IssueServices.createIssueInDB({ title, description, type }, reporterId);
 
     res.status(201).json({
@@ -56,7 +55,49 @@ const createIssue = async (
     next(error);
   }
 };
+export const getAllIssues: RequestHandler = async (req, res, next) => {
+  try {
+    const filters = req.query; 
+    const result = await IssueServices.getAllIssuesFromDB(filters);
+
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 🚀 2. Get Single Issue context identification handler
+export const getSingleIssue: RequestHandler = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const result = await IssueServices.getSingleIssueFromDB(Number(id));
+
+    if (!result) {
+      res.status(404).json({
+        success: false,
+        message: "Issue tracking not found",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+
 
 export const IssueControllers = {
   createIssue,
+  getAllIssues,
+  getSingleIssue,
+
 };
