@@ -6,6 +6,7 @@ import express, {
   type Response,
 } from "express";
 import { AuthRoutes } from "./app/modules/auth/auth.route";
+import { IssueRoutes } from "./app/modules/issues/issues.route";
 
 const app: Application = express();
 
@@ -29,7 +30,7 @@ app.get("/", (req: Request, res: Response) => {
 
 
 app.use("/api/auth", AuthRoutes);
-
+app.use("/api/issues", IssueRoutes);
 // Global Error Handling Middleware
 
 export default app;

@@ -18,6 +18,19 @@ export const initDB = async () => {
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
       );
     `);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS issues (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(150) NOT NULL,
+        description TEXT NOT NULL,
+        type VARCHAR(50) NOT NULL, 
+        status VARCHAR(50) DEFAULT 'open' NOT NULL, 
+        reporter_id INTEGER NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+      );
+    `);
+    console.log("Issues table ready/verified!");
     console.log("Users table ready/verified!");
     console.log("Database connected successfully!");
   } catch (error) {
