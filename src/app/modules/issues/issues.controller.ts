@@ -91,6 +91,28 @@ export const getSingleIssue: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+// 🚀 3. Delete Issue Controller with RequestHandler mapping interface
+export const deleteIssue: RequestHandler = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const isDeleted = await IssueServices.deleteIssueFromDB(Number(id));
+
+    if (!isDeleted) {
+      res.status(404).json({
+        success: false,
+        message: "Issue not found or already deleted",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Issue deleted successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 
 
@@ -99,5 +121,5 @@ export const IssueControllers = {
   createIssue,
   getAllIssues,
   getSingleIssue,
-
+  deleteIssue
 };

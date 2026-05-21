@@ -110,9 +110,21 @@ const getSingleIssueFromDB = async (id: number) => {
   };
 };
 
+const deleteIssueFromDB = async (id: number): Promise<boolean> => {
+  const checkIssue = await pool.query(`SELECT id FROM issues WHERE id = $1;`, [id]);
+  
+  if (checkIssue.rows.length === 0) {
+    return false; 
+  }
+
+  // Row permanently delete korar pure SQL command query
+  await pool.query(`DELETE FROM issues WHERE id = $1;`, [id]);
+  return true;
+};
 
 export const IssueServices = {
   createIssueInDB,
   getAllIssuesFromDB,
   getSingleIssueFromDB,
+  deleteIssueFromDB
 };
