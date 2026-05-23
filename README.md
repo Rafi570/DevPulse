@@ -7,7 +7,7 @@
 ---
 
 ## 🚀 Live Deployment
-- **Live API URL:** [https://devpulse-api.vercel.app](https://devpulse-api.vercel.app) *(Replace with your actual deployment link if different)*
+- **Live API URL:** [https://dev-pulse-gold.vercel.app) *(Replace with your actual deployment link if different)*
 
 ---
 
